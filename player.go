@@ -38,3 +38,37 @@ func (p *Player) AddCard(card Card) {
 func (p *Player) HandSize() int {
 	return len(p.Hand)
 }
+
+// AddCardsToBottom adds multiple cards to the bottom of the player's hand
+// Used when a player wins a slap and gets the pile
+func (p *Player) AddCardsToBottom(cards []Card) {
+	// Add cards to the beginning of the hand (bottom of deck)
+	p.Hand = append(cards, p.Hand...)
+}
+
+// RemoveTopCards removes n cards from the top of the player's hand
+// Used for slap penalties - returns the removed cards
+func (p *Player) RemoveTopCards(n int) ([]Card, error) {
+	if n <= 0 {
+		return []Card{}, nil
+	}
+
+	if len(p.Hand) == 0 {
+		return []Card{}, nil
+	}
+
+	if len(p.Hand) < n {
+		// Take all remaining cards if not enough
+		cards := make([]Card, len(p.Hand))
+		copy(cards, p.Hand)
+		p.Hand = p.Hand[:0] // Clear the hand
+		return cards, nil
+	}
+
+	// Remove from the end (top of deck)
+	cards := make([]Card, n)
+	copy(cards, p.Hand[len(p.Hand)-n:])
+	p.Hand = p.Hand[:len(p.Hand)-n]
+
+	return cards, nil
+}
