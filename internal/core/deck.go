@@ -1,7 +1,7 @@
-package main
+package core
 
 import (
-	"fmt"
+	"errors"
 	"math/rand/v2"
 )
 
@@ -29,7 +29,11 @@ func NewDeck() *Deck {
 	suits := []CardSuit{Hearts, Diamonds, Clubs, Spades}
 	for _, suit := range suits {
 		for _, def := range cardDefinitions {
-			cards = append(cards, NewCard(def.face, suit, def.value))
+			cards = append(cards, Card{
+				Face:  def.face,
+				Suit:  suit,
+				Value: def.value,
+			})
 		}
 	}
 
@@ -46,7 +50,7 @@ func (d *Deck) Shuffle() {
 // Draw removes and returns the top card from the deck
 func (d *Deck) Draw() (Card, error) {
 	if len(d.cards) == 0 {
-		return Card{}, fmt.Errorf("deck is empty")
+		return Card{}, errors.New("deck is empty")
 	}
 	card := d.cards[0]
 	d.cards = d.cards[1:]
