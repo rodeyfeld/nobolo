@@ -45,45 +45,16 @@ func (g *SimpleGame) GameLoop() {
 			return
 		}
 		pile.Cards = append(pile.Cards, card)
-		faceString := card.Face.String()
-		suitString := card.Suit.String()
-		if faceString == "" {
-			faceString = fmt.Sprintf("%d", card.Value)
-		}
-		cardString := fmt.Sprintf("%s of %s", faceString, suitString)
-		g.appendLog(fmt.Sprintf("%s played %s", g.Players[g.CurrentPlayer].Name, cardString))
+		g.appendLog(fmt.Sprintf("%s played %s", g.Players[g.CurrentPlayer].Name, formatCard(card)))
 
 		// Check if card is face card to start/continue a challenge
-		if chances, ok := faceChances[card.Face]; ok {
-			g.appendLog(fmt.Sprintf("Challenge: %s started a challenge", g.Players[g.CurrentPlayer].Name))
-			g.challengeOwner = g.CurrentPlayer
-			g.remainingChances = chances
-			g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
-			g.appendLog(fmt.Sprintf("Challenge: %s %d chances", g.Players[g.CurrentPlayer].Name, g.remainingChances))
-
+		if _, ok := faceChances[card.Face]; ok {
+			g.handleFaceCard(card)
 			return
 		}
 
 		// If in challenge, decrement chances for current player
-		if g.challengeOwner != -1 {
-			g.remainingChances--
-			g.appendLog(fmt.Sprintf("Challenge: %s has %d chances left", g.Players[g.CurrentPlayer].Name, g.remainingChances))
-			if g.remainingChances <= 0 {
-				g.appendLog(fmt.Sprintf("Challenge: %s failed the challenge", g.Players[g.CurrentPlayer].Name))
-				// Challenge failed: pile goes to challengeOwner
-				cards := make([]core.Card, len(pile.Cards))
-				copy(cards, pile.Cards)
-				pile.Cards = pile.Cards[:0]
-				g.Players[g.challengeOwner].AddCardsToBottom(cards)
-				g.appendLog(fmt.Sprintf("Challenge: %s takes %d cards", g.Players[g.challengeOwner].Name, len(cards)))
-				owner := g.challengeOwner
-				g.challengeOwner = -1
-				g.remainingChances = 0
-				// Next player is after the challenge owner
-				g.CurrentPlayer = (owner + 1) % len(g.Players)
-				return
-			}
-			// Still in challenge - same player continues
+		if g.progressChallenge(pile) {
 			return
 		}
 
@@ -94,23 +65,7 @@ func (g *SimpleGame) GameLoop() {
 
 	// Slap attempt
 	if inpututil.IsKeyJustPressed(ebiten.KeyS) && g.GameState == core.GameStateGameRunning {
-		slapType := core.CheckForSlap(pile.Cards)
-		if slapType != core.NoSlap {
-			// Success: current player gets pile
-			cards := make([]core.Card, len(pile.Cards))
-			copy(cards, pile.Cards)
-			pile.Cards = pile.Cards[:0]
-			g.Players[g.CurrentPlayer].AddCardsToBottom(cards)
-			g.appendLog(fmt.Sprintf("%s slapped: %s (+%d)", g.Players[g.CurrentPlayer].Name, slapType, len(cards)))
-			// reset challenge
-			g.challengeOwner = -1
-			g.remainingChances = 0
-		} else {
-			// Penalty: remove two cards from player to pile bottom
-			penaltyCards, _ := g.Players[g.CurrentPlayer].RemoveTopCards(2)
-			pile.Cards = append(pile.Cards, penaltyCards...)
-			g.appendLog(fmt.Sprintf("%s bad slap (-%d)", g.Players[g.CurrentPlayer].Name, len(penaltyCards)))
-		}
+		g.handleSlap(pile)
 		return
 	}
 
