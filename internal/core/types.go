@@ -27,6 +27,38 @@ const (
 	Spades
 )
 
+// String returns the string representation of CardFace
+func (cf CardFace) String() string {
+	switch cf {
+	case Jack:
+		return "Jack"
+	case Queen:
+		return "Queen"
+	case King:
+		return "King"
+	case Ace:
+		return "Ace"
+	default:
+		return ""
+	}
+}
+
+// String returns the string representation of CardSuit
+func (cs CardSuit) String() string {
+	switch cs {
+	case Hearts:
+		return "Hearts"
+	case Diamonds:
+		return "Diamonds"
+	case Clubs:
+		return "Clubs"
+	case Spades:
+		return "Spades"
+	default:
+		return "Unknown"
+	}
+}
+
 // Card represents a single playing card
 type Card struct {
 	Face  CardFace

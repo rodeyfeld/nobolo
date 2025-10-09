@@ -27,9 +27,9 @@ If the player misidentifies it and slaps, they must place two cards from the top
 
 ### Challenges
 
-If a player puts down a face card in the pile, then the next player must place cards in the pile until they also put a face card down
+If a player puts down a face card in the pile, then the next player must place cards continuously in the pile until they also put a face card down. If they put a face card down, then that player starts a challenge, and the loop continues until a player fails to put down a face card
 
-If they do not place a face card within the challenge, the pile goes to the player who has most recently placed a face card
+If they do not place a face card within the challenge, the pile goes to the player who has most recently placed a face card. If a player wins a challenge, their turn is next
 
 The challenge criteria are:
 - Jack: 1 chance to beat

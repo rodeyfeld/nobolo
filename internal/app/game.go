@@ -26,7 +26,7 @@ type SimpleGame struct {
 
 // NewSimpleGame creates a new simple game
 func NewSimpleGame() *SimpleGame {
-	return &SimpleGame{
+	g := &SimpleGame{
 		GameState:        core.UnknownGameState,
 		Players:          make([]core.Player, 0),
 		Pile:             core.Pile{Cards: make([]core.Card, 0)},
@@ -34,6 +34,8 @@ func NewSimpleGame() *SimpleGame {
 		remainingChances: 0,
 		logLines:         make([]string, 0, 64),
 	}
+	g.startGame()
+	return g
 }
 
 func (g *SimpleGame) startGame() {
@@ -170,4 +172,5 @@ func (g *SimpleGame) checkWinCondition() bool {
 
 func (g *SimpleGame) appendLog(s string) {
 	g.logLines = append(g.logLines, s)
+	fmt.Println(s)
 }

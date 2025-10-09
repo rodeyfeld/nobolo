@@ -45,20 +45,31 @@ func (g *SimpleGame) GameLoop() {
 			return
 		}
 		pile.Cards = append(pile.Cards, card)
-		g.appendLog(fmt.Sprintf("%s played %d of %d", g.Players[g.CurrentPlayer].Name, card.Value, card.Suit))
+		faceString := card.Face.String()
+		suitString := card.Suit.String()
+		if faceString == "" {
+			faceString = fmt.Sprintf("%d", card.Value)
+		}
+		cardString := fmt.Sprintf("%s of %s", faceString, suitString)
+		g.appendLog(fmt.Sprintf("%s played %s", g.Players[g.CurrentPlayer].Name, cardString))
 
 		// Check if card is face card to start/continue a challenge
 		if chances, ok := faceChances[card.Face]; ok {
+			g.appendLog(fmt.Sprintf("Challenge: %s started a challenge", g.Players[g.CurrentPlayer].Name))
 			g.challengeOwner = g.CurrentPlayer
 			g.remainingChances = chances
 			g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
+			g.appendLog(fmt.Sprintf("Challenge: %s %d chances", g.Players[g.CurrentPlayer].Name, g.remainingChances))
+
 			return
 		}
 
-		// If in challenge, decrement chances for next player
+		// If in challenge, decrement chances for current player
 		if g.challengeOwner != -1 {
 			g.remainingChances--
+			g.appendLog(fmt.Sprintf("Challenge: %s has %d chances left", g.Players[g.CurrentPlayer].Name, g.remainingChances))
 			if g.remainingChances <= 0 {
+				g.appendLog(fmt.Sprintf("Challenge: %s failed the challenge", g.Players[g.CurrentPlayer].Name))
 				// Challenge failed: pile goes to challengeOwner
 				cards := make([]core.Card, len(pile.Cards))
 				copy(cards, pile.Cards)
@@ -72,9 +83,11 @@ func (g *SimpleGame) GameLoop() {
 				g.CurrentPlayer = (owner + 1) % len(g.Players)
 				return
 			}
+			// Still in challenge - same player continues
+			return
 		}
 
-		// normal progression
+		// normal progression (not in challenge)
 		g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
 		return
 	}
