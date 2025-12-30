@@ -63,6 +63,10 @@ type Card struct {
 	Value int
 }
 
+type Pile struct {
+	Cards []Card
+}
+
 type Player struct {
 	Name string
 	Hand []Card

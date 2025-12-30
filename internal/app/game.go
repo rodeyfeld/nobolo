@@ -12,10 +12,10 @@ import (
 )
 
 type SimpleGame struct {
-	GameState     core.GameState
-	Players       []core.Player
-	Pile          []Card 
-	CurrentPlayer int
+	GameState        core.GameState
+	Players          []core.Player
+	Pile             []core.Card
+	CurrentPlayer    int
 	challengeOwner   int
 	remainingChances int
 	// UI log
@@ -35,8 +35,7 @@ func NewSimpleGame() *SimpleGame {
 	return g
 }
 
-
-func (g *Simplegame) createPlayers() { 
+func (g *SimpleGame) createPlayers() {
 	playerNames := []string{"Alice", "Bob", "Charlie"}
 	for _, name := range playerNames {
 		g.Players = append(g.Players, *core.NewPlayer(name))
@@ -47,19 +46,19 @@ func (g *SimpleGame) startGame() {
 	// Reset game state
 	g.GameState = core.GameStateGameRunning
 	g.CurrentPlayer = 0
-	players = g.createPlayers()
+	g.createPlayers()
 
 	// Deal cards
 	deck := core.NewDeck()
 	deck.Shuffle()
 
-	for len(deck.cards) > 0 {
-		for player := range players {
+	for deck.CardCount() > 0 {
+		for i := range g.Players {
 			card, err := deck.Draw()
 			if err != nil {
 				break
 			}
-			g.Players[playerIndex].AddCard(card)
+			g.Players[i].AddCardsToBottom([]core.Card{card})
 		}
 	}
 
@@ -108,7 +107,7 @@ func drawGame(screen *ebiten.Image, g *SimpleGame) {
 
 	yPos := 100
 	for i, player := range g.Players {
-		text := fmt.Sprintf("%s: %d cards", player.Name, player.HandSize())
+		text := fmt.Sprintf("%s: %d cards", player.Name, len(player.Hand))
 		if i == g.CurrentPlayer && g.GameState == core.GameStateGameRunning {
 			text += " (Your turn)"
 		}
@@ -116,7 +115,7 @@ func drawGame(screen *ebiten.Image, g *SimpleGame) {
 		yPos += 30
 	}
 
-	pileText := fmt.Sprintf("Pile: %d cards", g.Pile.Size())
+	pileText := fmt.Sprintf("Pile: %d cards", len(g.Pile))
 	ebitenutil.DebugPrintAt(screen, pileText, 50, yPos+50)
 
 	stateText := fmt.Sprintf("Game State: %s", g.GameState.String())
@@ -148,7 +147,7 @@ func (g *SimpleGame) checkWinCondition() bool {
 	countWithCards := 0
 	lastIdx := -1
 	for i := range g.Players {
-		if len(g.Players[i].hand) > 0 {
+		if len(g.Players[i].Hand) > 0 {
 			countWithCards++
 			lastIdx = i
 		}

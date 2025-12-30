@@ -18,20 +18,20 @@ var faceChances = map[core.CardFace]int{
 	core.Ace:   4,
 }
 
+
+
 func (g *SimpleGame) GameLoop() {
 	if g.GameState == core.UnknownGameState {
 		g.startGame()
 	}
 
-	var pile = &g.Pile
-
 	// basic tick - called from Update using input triggers, not auto-run
 	// Playing a card
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) && g.GameState == core.GameStateGameRunning {
 		
-		currentPlayer = g.Players[g.CurrentPlayer]
+		currentPlayer := &g.Players[g.CurrentPlayer]
 		
-		if len(currentPlayer.hand) == 0 {
+		if len(currentPlayer.Hand) == 0 {
 			g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
 			return
 		}
@@ -41,7 +41,7 @@ func (g *SimpleGame) GameLoop() {
 			g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
 			return
 		}
-		pile.Cards = append(pile.Cards, card)
+		g.Pile = append(g.Pile, card)
 		g.appendLog(fmt.Sprintf("%s played %s", g.Players[g.CurrentPlayer].Name, formatCard(card)))
 
 		// Check if card is face card to start/continue a challenge
@@ -51,7 +51,7 @@ func (g *SimpleGame) GameLoop() {
 		}
 
 		// If in challenge, decrement chances for current player
-		if g.progressChallenge(pile) {
+		if g.progressChallenge() {
 			return
 		}
 
@@ -62,7 +62,7 @@ func (g *SimpleGame) GameLoop() {
 
 	// Slap attempt
 	if inpututil.IsKeyJustPressed(ebiten.KeyS) && g.GameState == core.GameStateGameRunning {
-		g.handleSlap(pile)
+		g.handleSlap()
 		return
 	}
 

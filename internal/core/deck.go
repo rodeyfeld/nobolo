@@ -5,12 +5,10 @@ import (
 	"math/rand/v2"
 )
 
-// Deck represents a collection of cards
 type Deck struct {
 	cards []Card
 }
 
-// Card definitions using a more declarative approach
 var cardDefinitions = []struct {
 	face  CardFace
 	value int
@@ -38,6 +36,11 @@ func NewDeck() *Deck {
 	}
 
 	return &Deck{cards: cards}
+}
+
+// CardCount returns the number of cards remaining in the deck.
+func (d *Deck) CardCount() int {
+	return len(d.cards)
 }
 
 // Shuffle randomizes the order of cards in the deck

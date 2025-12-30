@@ -67,6 +67,16 @@ func checkDoubles(pile []Card) bool {
 	return top.Face == second.Face && top.Value == second.Value
 }
 
+
+func checkKingQueen(pile []Card) bool {
+	if len(pile) < 2 {
+		return false
+	}
+	top := pile[len(pile)-1]
+	second := pile[len(pile)-2]
+	return top.Face == Queen && second.Face == King
+}
+
 func checkQueenKing(pile []Card) bool {
 	if len(pile) < 2 {
 		return false
