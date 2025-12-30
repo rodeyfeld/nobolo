@@ -27,7 +27,6 @@ const (
 	Spades
 )
 
-// String returns the string representation of CardFace
 func (cf CardFace) String() string {
 	switch cf {
 	case Jack:
@@ -43,7 +42,6 @@ func (cf CardFace) String() string {
 	}
 }
 
-// String returns the string representation of CardSuit
 func (cs CardSuit) String() string {
 	switch cs {
 	case Hearts:
@@ -59,30 +57,17 @@ func (cs CardSuit) String() string {
 	}
 }
 
-// Card represents a single playing card
 type Card struct {
 	Face  CardFace
 	Suit  CardSuit
 	Value int
 }
 
-// Pile represents the center pile of cards
-type Pile struct {
-	Cards []Card
-}
-
-// Size returns the number of cards in the pile
-func (p *Pile) Size() int {
-	return len(p.Cards)
-}
-
-// Player represents a game player
 type Player struct {
 	Name string
 	Hand []Card
 }
 
-// NewPlayer creates a new player with the given name
 func NewPlayer(name string) *Player {
 	return &Player{
 		Name: name,
@@ -90,17 +75,6 @@ func NewPlayer(name string) *Player {
 	}
 }
 
-// AddCard adds a card to the player's hand
-func (p *Player) AddCard(card Card) {
-	p.Hand = append(p.Hand, card)
-}
-
-// HandSize returns the number of cards in the player's hand
-func (p *Player) HandSize() int {
-	return len(p.Hand)
-}
-
-// PlayTopCard removes and returns the last card (top) from the player's hand
 func (p *Player) PlayTopCard() (Card, error) {
 	if len(p.Hand) == 0 {
 		return Card{}, errors.New("player has no cards")
@@ -111,7 +85,6 @@ func (p *Player) PlayTopCard() (Card, error) {
 	return c, nil
 }
 
-// AddCardsToBottom adds multiple cards to the bottom (front) of the hand
 func (p *Player) AddCardsToBottom(cards []Card) {
 	if len(cards) == 0 {
 		return
@@ -140,7 +113,6 @@ func (p *Player) RemoveTopCards(n int) ([]Card, error) {
 	return cards, nil
 }
 
-// GameState represents the current state of the game
 type GameState byte
 
 const (

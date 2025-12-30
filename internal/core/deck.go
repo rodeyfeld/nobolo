@@ -57,7 +57,3 @@ func (d *Deck) Draw() (Card, error) {
 	return card, nil
 }
 
-// Size returns the number of cards remaining in the deck
-func (d *Deck) Size() int {
-	return len(d.cards)
-}

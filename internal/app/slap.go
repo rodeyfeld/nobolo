@@ -9,10 +9,7 @@ import (
 func (g *SimpleGame) handleSlap(pile *core.Pile) {
 	slapType := core.CheckForSlap(pile.Cards)
 	if slapType != core.NoSlap {
-		cards := make([]core.Card, len(pile.Cards))
-		copy(cards, pile.Cards)
-		pile.Cards = pile.Cards[:0]
-		g.Players[g.CurrentPlayer].AddCardsToBottom(cards)
+		g.Players[g.CurrentPlayer].AddCardsToBottom(pile.Cards)
 		g.appendLog(fmt.Sprintf("%s slapped: %s (+%d)", g.Players[g.CurrentPlayer].Name, slapType, len(cards)))
 		g.challengeOwner = -1
 		g.remainingChances = 0

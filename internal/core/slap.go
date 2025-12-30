@@ -6,19 +6,21 @@ type SlapType int
 const (
 	NoSlap       SlapType = iota
 	ThreeInOrder          // Three cards in numeric order
-	QueenKing             // Queen followed by King
+	QueenKing             // Queen Followed by King
+	KingQueen             // King Followed by Queen
 	AddToTen              // Two cards adding up to ten (numbered cards only)
 	Sandwich              // Two identical cards separated by one card
 	Doubles               // Two identical cards in order
 )
 
-// String returns the string representation of SlapType
 func (st SlapType) String() string {
 	switch st {
 	case ThreeInOrder:
 		return "Three in Order"
 	case QueenKing:
 		return "Queen-King"
+	case KingQueen:
+		return "King-Queen"
 	case AddToTen:
 		return "Add to Ten"
 	case Sandwich:
@@ -30,8 +32,6 @@ func (st SlapType) String() string {
 	}
 }
 
-// CheckForSlap examines the pile to see if a slap is valid
-// Priority order: Doubles > Queen-King > Sandwich > Three-in-Order > Add-to-Ten
 func CheckForSlap(pile []Card) SlapType {
 	if len(pile) < 2 {
 		return NoSlap
@@ -43,13 +43,16 @@ func CheckForSlap(pile []Card) SlapType {
 	if checkQueenKing(pile) {
 		return QueenKing
 	}
-	if len(pile) >= 3 && checkSandwich(pile) {
+	if checkKingQueen(pile) {
+		return KingQueen
+	}
+	if checkSandwich(pile) {
 		return Sandwich
 	}
-	if len(pile) >= 3 && checkThreeInOrder(pile) {
+	if checkThreeInOrder(pile) {
 		return ThreeInOrder
 	}
-	if len(pile) >= 2 && checkAddToTen(pile) {
+	if checkAddToTen(pile) {
 		return AddToTen
 	}
 	return NoSlap

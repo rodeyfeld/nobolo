@@ -18,12 +18,7 @@ var faceChances = map[core.CardFace]int{
 	core.Ace:   4,
 }
 
-// GameLoop manages turn progression, challenges, and slaps.
-// Simple input:
-// - Space: next player plays a card
-// - S: slap (current player attempts a slap)
 func (g *SimpleGame) GameLoop() {
-	// Initialize if needed
 	if g.GameState == core.UnknownGameState {
 		g.startGame()
 	}
@@ -33,8 +28,10 @@ func (g *SimpleGame) GameLoop() {
 	// basic tick - called from Update using input triggers, not auto-run
 	// Playing a card
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) && g.GameState == core.GameStateGameRunning {
-		// if someone is out of cards, skip them
-		if g.Players[g.CurrentPlayer].HandSize() == 0 {
+		
+		currentPlayer = g.Players[g.CurrentPlayer]
+		
+		if len(currentPlayer.hand) == 0 {
 			g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
 			return
 		}

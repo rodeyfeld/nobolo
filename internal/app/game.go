@@ -11,25 +11,22 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-// SimpleGame is a basic ebiten game implementation
 type SimpleGame struct {
 	GameState     core.GameState
 	Players       []core.Player
-	Pile          core.Pile
+	Pile          []Card 
 	CurrentPlayer int
-	// challenge state persists across frames
 	challengeOwner   int
 	remainingChances int
 	// UI log
 	logLines []string
 }
 
-// NewSimpleGame creates a new simple game
 func NewSimpleGame() *SimpleGame {
 	g := &SimpleGame{
 		GameState:        core.UnknownGameState,
 		Players:          make([]core.Player, 0),
-		Pile:             core.Pile{Cards: make([]core.Card, 0)},
+		Pile:             make([]core.Card, 0),
 		challengeOwner:   -1,
 		remainingChances: 0,
 		logLines:         make([]string, 0, 64),
@@ -38,42 +35,41 @@ func NewSimpleGame() *SimpleGame {
 	return g
 }
 
-func (g *SimpleGame) startGame() {
-	// Reset game state
-	g.GameState = core.GameStateGameRunning
-	g.CurrentPlayer = 0
-	g.Pile = core.Pile{Cards: make([]core.Card, 0)}
 
-	// Create players
-	g.Players = make([]core.Player, 0)
+func (g *Simplegame) createPlayers() { 
 	playerNames := []string{"Alice", "Bob", "Charlie"}
 	for _, name := range playerNames {
 		g.Players = append(g.Players, *core.NewPlayer(name))
 	}
+}
+
+func (g *SimpleGame) startGame() {
+	// Reset game state
+	g.GameState = core.GameStateGameRunning
+	g.CurrentPlayer = 0
+	players = g.createPlayers()
 
 	// Deal cards
 	deck := core.NewDeck()
 	deck.Shuffle()
 
-	playerIndex := 0
-	for deck.Size() > 0 {
-		card, err := deck.Draw()
-		if err != nil {
-			break
+	for len(deck.cards) > 0 {
+		for player := range players {
+			card, err := deck.Draw()
+			if err != nil {
+				break
+			}
+			g.Players[playerIndex].AddCard(card)
 		}
-		g.Players[playerIndex].AddCard(card)
-		playerIndex = (playerIndex + 1) % len(g.Players)
 	}
 
 	g.challengeOwner = -1
 	g.remainingChances = 0
 	g.logLines = g.logLines[:0]
-	g.appendLog("Game started with 3 players")
+	g.appendLog("Game started")
 }
 
-// Update implements ebiten.Game
 func (g *SimpleGame) Update() error {
-	// Handle input
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
 		if g.GameState == core.UnknownGameState || g.GameState == core.GameStateGameOver {
@@ -152,7 +148,7 @@ func (g *SimpleGame) checkWinCondition() bool {
 	countWithCards := 0
 	lastIdx := -1
 	for i := range g.Players {
-		if g.Players[i].HandSize() > 0 {
+		if len(g.Players[i].hand) > 0 {
 			countWithCards++
 			lastIdx = i
 		}
