@@ -32,11 +32,10 @@ func (g *Game) progressChallenge() bool {
 
 	// Failed challenge: give pile to owner
 	g.appendLog(fmt.Sprintf("Challenge: %s failed the challenge", g.Players[g.CurrentPlayer].Name))
-	cards := make([]core.Card, len(g.Pile.Cards))
-	copy(cards, g.Pile.Cards)
-	g.Pile.Cards = g.Pile.Cards[:0]
-	g.Players[g.challengeOwner].AddCardsToBottom(cards)
-	g.appendLog(fmt.Sprintf("Challenge: %s takes %d cards", g.Players[g.challengeOwner].Name, len(cards)))
+	count := g.Pile.Count()
+	cards := g.Pile.Clear()
+	g.Players[g.challengeOwner].Hand.PushBottom(cards)
+	g.appendLog(fmt.Sprintf("Challenge: %s takes %d cards", g.Players[g.challengeOwner].Name, count))
 	owner := g.challengeOwner
 	g.challengeOwner = -1
 	g.remainingChances = 0

@@ -5,7 +5,11 @@ import (
 	"nobolo/internal/core"
 )
 
-// formatCard returns a human-readable string like "Jack of Hearts" or "7 of Clubs".
+func (g *Game) appendLog(s string) {
+	g.logLines = append(g.logLines, s)
+	fmt.Println(s)
+}
+
 func formatCard(card core.Card) string {
 	faceString := card.Face.String()
 	suitString := card.Suit.String()

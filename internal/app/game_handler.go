@@ -2,13 +2,19 @@ package app
 
 import (
 	"fmt"
-	"image/color"
 
 	"nobolo/internal/core"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
+
+var faceChances = map[core.CardFace]int{
+	core.Jack:  1,
+	core.Queen: 2,
+	core.King:  3,
+	core.Ace:   4,
+}
 
 type Game struct {
 	Players          []core.Player
@@ -17,6 +23,7 @@ type Game struct {
 	challengeOwner   int
 	remainingChances int
 	logLines         []string
+	Turns *core.Turn
 }
 
 type GameHandler struct {
@@ -28,8 +35,10 @@ type GameHandler struct {
 func NewGameHandler() *GameHandler {
 	gh := &GameHandler{
 		GameState: core.UnknownGameState,
-		Game:      &Game{},
-		logLines:  make([]string, 0, 64),
+		Game: &Game{
+			Pile: &core.Pile{},
+		},
+		logLines: make([]string, 0, 64),
 	}
 	return gh
 }
@@ -50,13 +59,13 @@ func (g *Game) startGame() {
 	deck := core.NewDeck()
 	deck.Shuffle()
 
-	for deck.CardCount() > 0 {
+	for deck.Count() > 0 {
 		for i := range g.Players {
 			card, err := deck.Draw()
 			if err != nil {
 				break
 			}
-			g.Players[i].AddCardsToBottom([]core.Card{card})
+			g.Players[i].Hand.PushBottom([]core.Card{card})
 		}
 	}
 
@@ -66,33 +75,12 @@ func (g *Game) startGame() {
 	g.appendLog("Game started")
 }
 
-// Draw implements ebiten.Game
-func (gh *GameHandler) Draw(screen *ebiten.Image) {
-	screen.Fill(color.RGBA{24, 28, 36, 255})
-
-	if gh.GameState == core.UnknownGameState || gh.GameState == core.GameStateGameOver {
-		drawMenu(screen)
-	} else if gh.GameState == core.GameStateGameRunning {
-		drawGame(screen, gh.Game)
-	}
-}
-
-// Layout implements ebiten.Game
-func (gh *GameHandler) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 800, 600
-}
-
-func drawMenu(screen *ebiten.Image) {
-	ebitenutil.DebugPrintAt(screen, "🎮 NOBOLO - Egyptian Rats Crew Card Game", 200, 100)
-	ebitenutil.DebugPrintAt(screen, "[Click] Play Game", 350, 225)
-}
-
 func drawGame(screen *ebiten.Image, g *Game) {
 	ebitenutil.DebugPrintAt(screen, "Game in Progress", 50, 50)
 
 	yPos := 100
 	for i, player := range g.Players {
-		text := fmt.Sprintf("%s: %d cards", player.Name, len(player.Hand))
+		text := fmt.Sprintf("%s: %d cards", player.Name, player.Hand.Count())
 		if i == g.CurrentPlayer {
 			text += " (Your turn)"
 		}
@@ -100,7 +88,7 @@ func drawGame(screen *ebiten.Image, g *Game) {
 		yPos += 30
 	}
 
-	pileText := fmt.Sprintf("Pile: %d cards", len(g.Pile.Cards))
+	pileText := fmt.Sprintf("Pile: %d cards", g.Pile.Count())
 	ebitenutil.DebugPrintAt(screen, pileText, 50, yPos+50)
 
 	ebitenutil.DebugPrintAt(screen, "Controls: SPACE=play, S=slap, Click=Start/Restart", 400, 550)
@@ -119,30 +107,16 @@ func drawGame(screen *ebiten.Image, g *Game) {
 	}
 }
 
-// checkWinCondition checks if only one player remains with cards
-func (g *Game) checkWinCondition() bool {
+func (g *Game) isGameWon() bool {
+	alivePlayerCount := 0
+	for _, player := range g.Players {
+		if player.Alive {
 
-	countWithCards := 0
-	lastIdx := -1
-	for i := range g.Players {
-		if len(g.Players[i].Hand) > 0 {
-			countWithCards++
-			lastIdx = i
+			alivePlayerCount += 1
 		}
 	}
-
-	if countWithCards <= 1 {
-		// Show winner inline by moving turn to winner if exists
-		if lastIdx >= 0 {
-			g.CurrentPlayer = lastIdx
-		}
-		return true
+	if alivePlayerCount > 1 {
+		return false
 	}
-
-	return false
-}
-
-func (g *Game) appendLog(s string) {
-	g.logLines = append(g.logLines, s)
-	fmt.Println(s)
+	return true
 }

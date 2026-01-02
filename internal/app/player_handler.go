@@ -2,31 +2,18 @@ package app
 
 import (
 	"fmt"
-	"time"
-
 	"nobolo/internal/core"
-
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
-
-// Challenge counters for face cards
-var faceChances = map[core.CardFace]int{
-	core.Jack:  1,
-	core.Queen: 2,
-	core.King:  3,
-	core.Ace:   4,
-}
 
 func (g *Game) handleCardThrow() {
 	currentPlayer := &g.Players[g.CurrentPlayer]
 
-	if len(currentPlayer.Hand) == 0 {
+	if currentPlayer.Hand.Count() == 0 {
 		g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
 		return
 	}
 
-	card, err := g.Players[g.CurrentPlayer].PlayTopCard()
+	card, err := g.Players[g.CurrentPlayer].Hand.PopTop()
 	if err != nil {
 		g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
 		return
@@ -50,23 +37,18 @@ func (g *Game) handleCardThrow() {
 	return
 }
 
-func (gh *GameHandler) Update() error  {
-
-	// basic tick - called from Update using input triggers, not auto-run
-	// Playing a card
-
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		gh.Game.handleCardThrow()
+func (g *Game) handleSlap() {
+	slapType := core.CheckSlapType(g.Pile)
+	if slapType != core.NoSlap {
+		wonCards := g.Pile.Count()
+		g.Players[g.CurrentPlayer].Hand.PushBottom(g.Pile.Clear())
+		g.appendLog(fmt.Sprintf("%s slapped: %s (+%d)", g.Players[g.CurrentPlayer].Name, slapType, wonCards))
+		g.challengeOwner = -1
+		g.remainingChances = 0
+		return
+	} else {
+		penaltyCards := g.Players[g.CurrentPlayer].Hand.PopTopN(2)
+		g.Pile.PushBottom(penaltyCards)
+		g.appendLog(fmt.Sprintf("%s bad slap (-%d)", g.Players[g.CurrentPlayer].Name, len(penaltyCards)))
 	}
-
-	// Slap attempt
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		gh.Game.handleSlap()
-	}
-
-	// Win check every tick
-	_ = gh.Game.checkWinCondition()
-
-	time.Sleep(5 * time.Millisecond)
-	return nil
 }

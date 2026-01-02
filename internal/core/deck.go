@@ -1,12 +1,7 @@
 package core
 
-import (
-	"errors"
-	"math/rand/v2"
-)
-
 type Deck struct {
-	cards []Card
+	CardStack
 }
 
 var cardDefinitions = []struct {
@@ -35,28 +30,13 @@ func NewDeck() *Deck {
 		}
 	}
 
-	return &Deck{cards: cards}
-}
-
-// CardCount returns the number of cards remaining in the deck.
-func (d *Deck) CardCount() int {
-	return len(d.cards)
-}
-
-// Shuffle randomizes the order of cards in the deck
-func (d *Deck) Shuffle() {
-	rand.Shuffle(len(d.cards), func(i, j int) {
-		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
-	})
+	return &Deck{
+		CardStack: CardStack{Cards: cards},
+	}
 }
 
 // Draw removes and returns the top card from the deck
 func (d *Deck) Draw() (Card, error) {
-	if len(d.cards) == 0 {
-		return Card{}, errors.New("deck is empty")
-	}
-	card := d.cards[0]
-	d.cards = d.cards[1:]
-	return card, nil
+	return d.PopTop()
 }
 
