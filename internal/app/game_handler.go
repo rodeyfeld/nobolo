@@ -8,43 +8,41 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-type SimpleGame struct {
-	GameState        core.GameState
+type Game struct {
 	Players          []core.Player
-	Pile             []core.Card
+	Pile             *core.Pile
 	CurrentPlayer    int
 	challengeOwner   int
 	remainingChances int
-	// UI log
-	logLines []string
+	logLines         []string
 }
 
-func NewSimpleGame() *SimpleGame {
-	g := &SimpleGame{
-		GameState:        core.UnknownGameState,
-		Players:          make([]core.Player, 0),
-		Pile:             make([]core.Card, 0),
-		challengeOwner:   -1,
-		remainingChances: 0,
-		logLines:         make([]string, 0, 64),
+type GameHandler struct {
+	Game      *Game
+	GameState core.GameState
+	logLines  []string
+}
+
+func NewGameHandler() *GameHandler {
+	gh := &GameHandler{
+		GameState: core.UnknownGameState,
+		Game:      &Game{},
+		logLines:  make([]string, 0, 64),
 	}
-	g.startGame()
-	return g
+	return gh
 }
 
-func (g *SimpleGame) createPlayers() {
+func (g *Game) createPlayers() {
 	playerNames := []string{"Alice", "Bob", "Charlie"}
 	for _, name := range playerNames {
 		g.Players = append(g.Players, *core.NewPlayer(name))
 	}
 }
 
-func (g *SimpleGame) startGame() {
+func (g *Game) startGame() {
 	// Reset game state
-	g.GameState = core.GameStateGameRunning
 	g.CurrentPlayer = 0
 	g.createPlayers()
 
@@ -68,32 +66,19 @@ func (g *SimpleGame) startGame() {
 	g.appendLog("Game started")
 }
 
-func (g *SimpleGame) Update() error {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		x, y := ebiten.CursorPosition()
-		if g.GameState == core.UnknownGameState || g.GameState == core.GameStateGameOver {
-			if x >= 350 && x <= 550 && y >= 200 && y <= 250 {
-				g.startGame()
-			}
-		}
-	}
-	g.GameLoop()
-	return nil
-}
-
 // Draw implements ebiten.Game
-func (g *SimpleGame) Draw(screen *ebiten.Image) {
+func (gh *GameHandler) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{24, 28, 36, 255})
 
-	if g.GameState == core.UnknownGameState || g.GameState == core.GameStateGameOver {
+	if gh.GameState == core.UnknownGameState || gh.GameState == core.GameStateGameOver {
 		drawMenu(screen)
-	} else if g.GameState == core.GameStateGameRunning {
-		drawGame(screen, g)
+	} else if gh.GameState == core.GameStateGameRunning {
+		drawGame(screen, gh.Game)
 	}
 }
 
 // Layout implements ebiten.Game
-func (g *SimpleGame) Layout(outsideWidth, outsideHeight int) (int, int) {
+func (gh *GameHandler) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return 800, 600
 }
 
@@ -102,26 +87,22 @@ func drawMenu(screen *ebiten.Image) {
 	ebitenutil.DebugPrintAt(screen, "[Click] Play Game", 350, 225)
 }
 
-func drawGame(screen *ebiten.Image, g *SimpleGame) {
+func drawGame(screen *ebiten.Image, g *Game) {
 	ebitenutil.DebugPrintAt(screen, "Game in Progress", 50, 50)
 
 	yPos := 100
 	for i, player := range g.Players {
 		text := fmt.Sprintf("%s: %d cards", player.Name, len(player.Hand))
-		if i == g.CurrentPlayer && g.GameState == core.GameStateGameRunning {
+		if i == g.CurrentPlayer {
 			text += " (Your turn)"
 		}
 		ebitenutil.DebugPrintAt(screen, text, 50, yPos)
 		yPos += 30
 	}
 
-	pileText := fmt.Sprintf("Pile: %d cards", len(g.Pile))
+	pileText := fmt.Sprintf("Pile: %d cards", len(g.Pile.Cards))
 	ebitenutil.DebugPrintAt(screen, pileText, 50, yPos+50)
 
-	stateText := fmt.Sprintf("Game State: %s", g.GameState.String())
-	ebitenutil.DebugPrintAt(screen, stateText, 50, 550)
-
-	// Controls hint
 	ebitenutil.DebugPrintAt(screen, "Controls: SPACE=play, S=slap, Click=Start/Restart", 400, 550)
 
 	// Draw log on the right
@@ -139,10 +120,7 @@ func drawGame(screen *ebiten.Image, g *SimpleGame) {
 }
 
 // checkWinCondition checks if only one player remains with cards
-func (g *SimpleGame) checkWinCondition() bool {
-	if g.GameState != core.GameStateGameRunning {
-		return false
-	}
+func (g *Game) checkWinCondition() bool {
 
 	countWithCards := 0
 	lastIdx := -1
@@ -154,7 +132,6 @@ func (g *SimpleGame) checkWinCondition() bool {
 	}
 
 	if countWithCards <= 1 {
-		g.GameState = core.GameStateGameOver
 		// Show winner inline by moving turn to winner if exists
 		if lastIdx >= 0 {
 			g.CurrentPlayer = lastIdx
@@ -165,7 +142,7 @@ func (g *SimpleGame) checkWinCondition() bool {
 	return false
 }
 
-func (g *SimpleGame) appendLog(s string) {
+func (g *Game) appendLog(s string) {
 	g.logLines = append(g.logLines, s)
 	fmt.Println(s)
 }

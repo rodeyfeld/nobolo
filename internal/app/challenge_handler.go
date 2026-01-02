@@ -6,7 +6,7 @@ import (
 )
 
 // handleFaceCard starts a challenge for the given face card.
-func (g *SimpleGame) handleFaceCard(card core.Card) {
+func (g *Game) handleFaceCard(card core.Card) {
 	if chances, ok := faceChances[card.Face]; ok {
 		g.appendLog(fmt.Sprintf("Challenge: %s started a challenge", g.Players[g.CurrentPlayer].Name))
 		g.challengeOwner = g.CurrentPlayer
@@ -19,7 +19,7 @@ func (g *SimpleGame) handleFaceCard(card core.Card) {
 // progressChallenge decrements chances for the current player and resolves if failed.
 // Returns true if the turn should end (either challenge resolved or continue same player),
 // and false if normal progression should occur.
-func (g *SimpleGame) progressChallenge() bool {
+func (g *Game) progressChallenge() bool {
 	if g.challengeOwner == -1 {
 		return false
 	}
@@ -32,9 +32,9 @@ func (g *SimpleGame) progressChallenge() bool {
 
 	// Failed challenge: give pile to owner
 	g.appendLog(fmt.Sprintf("Challenge: %s failed the challenge", g.Players[g.CurrentPlayer].Name))
-	cards := make([]core.Card, len(g.Pile))
-	copy(cards, g.Pile)
-	g.Pile = g.Pile[:0]
+	cards := make([]core.Card, len(g.Pile.Cards))
+	copy(cards, g.Pile.Cards)
+	g.Pile.Cards = g.Pile.Cards[:0]
 	g.Players[g.challengeOwner].AddCardsToBottom(cards)
 	g.appendLog(fmt.Sprintf("Challenge: %s takes %d cards", g.Players[g.challengeOwner].Name, len(cards)))
 	owner := g.challengeOwner

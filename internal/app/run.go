@@ -8,10 +8,10 @@ import (
 
 // Run starts the ebiten game loop
 func Run() {
-	game := NewSimpleGame()
+	gh := NewGameHandler()
 	ebiten.SetWindowSize(800, 600)
-	ebiten.SetWindowTitle("NOBOLO - Simple ECS Game")
-	if err := ebiten.RunGame(game); err != nil {
+	ebiten.SetWindowTitle("NOBOLO")
+	if err := ebiten.RunGame(gh); err != nil {
 		log.Fatal(err)
 	}
 }

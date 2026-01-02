@@ -32,43 +32,42 @@ func (st SlapType) String() string {
 	}
 }
 
-func CheckForSlap(pile []Card) SlapType {
-	if len(pile) < 2 {
+func CheckSlapType(pile *Pile) SlapType {
+	cards := pile.Cards
+	if len(cards) < 2 {
 		return NoSlap
 	}
 
-	if checkDoubles(pile) {
+	if isDoubles(cards) {
 		return Doubles
 	}
-	if checkQueenKing(pile) {
+	if isQueenKing(cards) {
 		return QueenKing
 	}
-	if checkKingQueen(pile) {
+	if isKingQueen(cards) {
 		return KingQueen
 	}
-	if checkSandwich(pile) {
+	if isSandwich(cards) {
 		return Sandwich
 	}
-	if checkThreeInOrder(pile) {
+	if isThreeInOrder(cards) {
 		return ThreeInOrder
 	}
-	if checkAddToTen(pile) {
+	if isAddToTen(cards) {
 		return AddToTen
 	}
 	return NoSlap
 }
 
-func checkDoubles(pile []Card) bool {
-	if len(pile) < 2 {
+func isDoubles(cards []Card) bool {
+	if len(cards) < 2 {
 		return false
 	}
-	top := pile[len(pile)-1]
-	second := pile[len(pile)-2]
+	top := cards[len(cards)-1]
+	second := cards[len(cards)-2]
 	return top.Face == second.Face && top.Value == second.Value
 }
-
-
-func checkKingQueen(pile []Card) bool {
+func isKingQueen(pile []Card) bool {
 	if len(pile) < 2 {
 		return false
 	}
@@ -77,7 +76,7 @@ func checkKingQueen(pile []Card) bool {
 	return top.Face == Queen && second.Face == King
 }
 
-func checkQueenKing(pile []Card) bool {
+func isQueenKing(pile []Card) bool {
 	if len(pile) < 2 {
 		return false
 	}
@@ -86,7 +85,7 @@ func checkQueenKing(pile []Card) bool {
 	return second.Face == Queen && top.Face == King
 }
 
-func checkAddToTen(pile []Card) bool {
+func isAddToTen(pile []Card) bool {
 	if len(pile) < 2 {
 		return false
 	}
@@ -98,7 +97,7 @@ func checkAddToTen(pile []Card) bool {
 	return top.Value+second.Value == 10
 }
 
-func checkSandwich(pile []Card) bool {
+func isSandwich(pile []Card) bool {
 	if len(pile) < 3 {
 		return false
 	}
@@ -107,7 +106,7 @@ func checkSandwich(pile []Card) bool {
 	return top.Face == third.Face && top.Value == third.Value
 }
 
-func checkThreeInOrder(pile []Card) bool {
+func isThreeInOrder(pile []Card) bool {
 	if len(pile) < 3 {
 		return false
 	}
