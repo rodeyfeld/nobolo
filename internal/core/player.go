@@ -12,3 +12,5 @@ func NewPlayer(name string) *Player {
 		Hand: CardStack{Cards: make([]Card, 0)},
 	}
 }
+
+

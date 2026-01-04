@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	fmt.Println("🎮 NOBOLO - Egyptian Rats Crew Card Game")
+	fmt.Println("NOBOLO")
 	fmt.Println("========================================")
 	fmt.Println()
 

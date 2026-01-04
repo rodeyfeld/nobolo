@@ -7,7 +7,7 @@ type CardFace byte
 type CardSuit byte
 
 const (
-	UnknownFace = CardFace(iota)
+	NoFace = CardFace(iota)
 	Jack
 	Queen
 	King
@@ -16,7 +16,7 @@ const (
 )
 
 const (
-	UnknownSuit = CardSuit(iota)
+	NoSuit = CardSuit(iota)
 	Hearts
 	Diamonds
 	Clubs
@@ -49,7 +49,7 @@ func (cs CardSuit) String() string {
 	case Spades:
 		return "Spades"
 	default:
-		return "Unknown"
+		return ""
 	}
 }
 
